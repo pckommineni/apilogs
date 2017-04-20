@@ -1,0 +1,28 @@
+#%RAML 0.8
+title: Cloudhub New Logging
+version: 1.0.0
+baseUri: http://localhost:8081/api/v1
+protocols: [ HTTP ]
+/cloudhubLogs:  
+  get :
+    queryParameters: 
+      username : 
+        required: true
+        type: string
+        example: pckommineni
+      password : 
+        required: true
+        type: string
+        example: iwant2bMLA
+      applicationName :
+        required: true
+        type: string
+        example: restless-api
+      deploymentId:
+        required: true
+        type: string
+        example: 58e3f82ae4b0cef4dd5ec232
+    responses: 
+      200: 
+        body: 
+          application/json: 
