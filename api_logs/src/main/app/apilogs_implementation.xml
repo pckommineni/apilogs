@@ -27,7 +27,7 @@ http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee
         </http:request>
         <object-to-string-transformer doc:name="Object to String"/>
         <set-session-variable variableName="organizationId" value="#[json:/user/organization/id]" doc:name="organizationId Session Variable"/>
-        <logger message="Got Organization Id : #[sessionVars.organizationId]" level="INFO" doc:name="Logger"/>
+        <logger message="Got Organization Id : #[sessionVars.organizationId]" level="INFO" doc:name=" myy Logger"/>
     </sub-flow>
     <sub-flow name="getEnvironmentsSubFlow">
         <http:request config-ref="HTTP_Request_Configuration" path="accounts/api/organizations/{organizationId}/environments" method="GET" doc:name="Get Environments HTTP Request">
