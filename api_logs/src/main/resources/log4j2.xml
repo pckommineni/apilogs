@@ -16,7 +16,7 @@
         <AsyncLogger name="org.apache" level="WARN"/>
 
         <!-- Reduce startup noise -->
-        <AsyncLogger name="org.springframework.beans.factory" level="WARN"/>
+        <AsyncLogger name="org.springframework.beans.factory" level="TRACE"/>
 
         <!-- Mule classes -->
         <AsyncLogger name="org.mule" level="INFO"/>
@@ -26,7 +26,7 @@
         <AsyncLogger name="org.jetel" level="WARN"/>
         <AsyncLogger name="Tracking" level="WARN"/>
         
-        <AsyncRoot level="INFO">
+        <AsyncRoot level="TRACE">
             <AppenderRef ref="file" />
         </AsyncRoot>
     </Loggers>

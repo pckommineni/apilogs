@@ -1,8 +1,0 @@
-/.repository
-/api.raml
-/api.xml
-/apilogs_implementation.xml
-/common-config.xml
-/log4j2.xml
-/mule-app.properties
-/mule-deploy.properties
