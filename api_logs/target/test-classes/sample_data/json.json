@@ -1,0 +1,17 @@
+{
+  "data": [
+    {
+      "id": "e6b978ff-381c-4e92-bd0d-f33e0343fbfc",
+      "name": "DEV-INT",
+      "organizationId": "053b837f-a1ee-43ad-8855-4d9617a2de79",
+      "isProduction": false
+    },
+    {
+      "id": "6ce31049-ab5f-4dd3-af5e-f5d118a1bb66",
+      "name": "QA",
+      "organizationId": "053b837f-a1ee-43ad-8855-4d9617a2de79",
+      "isProduction": false
+    }
+  ],
+  "total": 2
+}

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <sub-flow name="loginSubFlow">
+        <logger message="Before Login : #[message.inboundProperties.'http.query.params'.username] ++ #[message.inboundProperties.'http.query.params'.password]" level="INFO" doc:name="Logger"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="accounts/login" method="POST" doc:name="Login Http Request">
+            <http:request-builder>
+                <http:query-param paramName="username" value="#[message.inboundProperties.'http.query.params'.username]"/>
+                <http:query-param paramName="password" value="#[message.inboundProperties.'http.query.params'.password]"/>
+                <http:header headerName="Content-Type" value="application/json"/>
+            </http:request-builder>
+        </http:request>
+        <object-to-string-transformer mimeType="application/json" doc:name="Object to String"/>
+        <set-session-variable variableName="access_token" value="#[json:/access_token]" doc:name="access_token Session Variable"/>
+    </sub-flow>
+    <sub-flow name="getOrganizationIdSubFlow">
+        <http:request config-ref="HTTP_Request_Configuration" path="accounts/api/me" method="GET" doc:name="Get User Details HTTP Request">
+            <http:request-builder>
+                <http:header headerName="Authorization" value="#['Bearer '+sessionVars.access_token]"/>
+            </http:request-builder>
+        </http:request>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <set-session-variable variableName="organizationId" value="#[json:/user/organization/id]" doc:name="organizationId Session Variable"/>
+        <logger message="Got Organization Id : #[sessionVars.organizationId]" level="INFO" doc:name=" myy Logger"/>
+    </sub-flow>
+    <sub-flow name="getEnvironmentsSubFlow">
+        <http:request config-ref="HTTP_Request_Configuration" path="accounts/api/organizations/{organizationId}/environments" method="GET" doc:name="Get Environments HTTP Request">
+            <http:request-builder>
+                <http:uri-param paramName="organizationId" value="#[sessionVars.organizationId]"/>
+                <http:header headerName="Authorization" value="#['Bearer '+sessionVars.access_token]"/>
+            </http:request-builder>
+        </http:request>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <set-session-variable variableName="envId" value="#[json:/data[0]/id]" doc:name="envId Session Variable"/>
+        <logger message="Env ID : #[json:/data[0]/id]" level="INFO" doc:name="Logger"/>
+    </sub-flow>
+    <sub-flow name="getDeploymentIdSubFlow">
+        <http:request config-ref="HTTP_Request_Configuration" path="cloudhub/api/v2/applications/{applicationName}/deployments" method="GET" doc:name="Get Deployments HTTP Request">
+            <http:request-builder>
+                <http:uri-param paramName="applicationName" value="#[sessionVars.appName]"/>
+                <http:header headerName="X-ANYPNT-ENV-ID" value="#[sessionVars.envId]"/>
+                <http:header headerName="X-ANYPNT-ORG-ID" value="#[sessionVars.organizationId]"/>
+                <http:header headerName="Authorization" value="#['Bearer '+sessionVars.access_token]"/>
+            </http:request-builder>
+        </http:request>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <set-session-variable variableName="deployId" value="#[json:/data[2]/deploymentId]" doc:name="deploymentId Session Variable"/>
+        <logger message="Deploy ID : #[json:/data[2]/deploymentId]" level="INFO" doc:name="Logger"/>
+    </sub-flow>
+   
+    <flow name="apilogs_implementationFlow">
+        <set-session-variable variableName="appName" value="#[message.inboundProperties.'http.query.params'.applicationName]" doc:name="appName Session Variable"/>
+        <flow-ref name="loginSubFlow" doc:name="loginSubFlow"/>
+        <flow-ref name="getOrganizationIdSubFlow" doc:name="getOrganizationIdSubFlow"/>
+        <flow-ref name="getEnvironmentsSubFlow" doc:name="getEnvironmentsSubFlow"/>
+        <flow-ref name="getDeploymentIdSubFlow" doc:name="getDeploymentIdSubFlow"/>
+        <http:request config-ref="HTTP_Request_Configuration" path="cloudhub/api/v2/applications/{applicationName}/deployments/{cloudHubDeploymentId}/logs" method="GET" doc:name="Get Logs HTTP Request">
+            <http:request-builder>
+                <http:uri-param paramName="cloudHubDeploymentId" value="#[sessionVars.deployId]"/>
+                <http:uri-param paramName="applicationName" value="#[sessionVars.appName]"/>
+                <http:header headerName="Authorization" value="#['Bearer '+sessionVars.access_token]"/>
+                <http:header headerName="X-ANYPNT-ENV-ID" value="#[sessionVars.envId]"/>
+            </http:request-builder>
+        </http:request>
+        <object-to-string-transformer mimeType="application/json" doc:name="Object to String"/>
+    </flow>
+</mule>
